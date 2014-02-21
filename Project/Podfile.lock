@@ -1,0 +1,14 @@
+PODS:
+  - FSHeadsUpDisplay (0.1.0)
+
+DEPENDENCIES:
+  - FSHeadsUpDisplay (from `../FSHeadsUpDisplay.podspec`)
+
+EXTERNAL SOURCES:
+  FSHeadsUpDisplay:
+    :path: ../FSHeadsUpDisplay.podspec
+
+SPEC CHECKSUMS:
+  FSHeadsUpDisplay: e89295ad7bc688858b54e2725547292b89a1dfde
+
+COCOAPODS: 0.28.0

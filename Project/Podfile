@@ -1,7 +1,3 @@
+platform :ios, '7.0'
+
 pod "FSHeadsUpDisplay", :path => "../FSHeadsUpDisplay.podspec"
-
-target "Demo" do
-end
-
-target "DemoTests" do
-end
