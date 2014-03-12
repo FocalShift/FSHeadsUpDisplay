@@ -7,103 +7,63 @@
 
 #import <FSHeadsUpDisplay/FSHeadsUpDisplay.h>
 #import <QuartzCore/QuartzCore.h>
+#import <FSClassExtensions/NSThread+FSClassExtensions.h>
 
 @interface FSHeadsUpDisplay ()
 @property (nonatomic, strong) NSTimer *dismissalTimer;
+@property (nonatomic, strong) UIView *labelsContainer;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *messageLabel;
-@property (nonatomic, strong) NSLayoutConstraint *widthConstraint;
-@property (nonatomic, strong) NSLayoutConstraint *heightConstraint;
 @end
+
+static FSHeadsUpDisplay *defaultHeadsUpDisplay = nil;
 
 @implementation FSHeadsUpDisplay
 
-+ (void)showMessage:(NSString *)message title:(NSString *)title {
-    static FSHeadsUpDisplay *hud = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        UIView *rootView = [FSHeadsUpDisplay rootView];
-        hud = [[FSHeadsUpDisplay alloc] initWithFrame:CGRectZero];
-        [rootView addSubview:hud];
-        
-        [hud setTranslatesAutoresizingMaskIntoConstraints:NO];
-        [rootView addConstraint:[NSLayoutConstraint constraintWithItem:hud attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:rootView attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
-        [rootView addConstraint:[NSLayoutConstraint constraintWithItem:hud attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:rootView attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0.0f]];
-        
-        hud.widthConstraint = [NSLayoutConstraint constraintWithItem:hud attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:rootView attribute:NSLayoutAttributeWidth multiplier:0.9f constant:0.0f];
-        hud.heightConstraint = [NSLayoutConstraint constraintWithItem:hud attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:rootView attribute:NSLayoutAttributeHeight multiplier:0.25f constant:0.0f];
++ (FSHeadsUpDisplay *)HeadsUpDisplayForView:(UIView *)superview {
+    FSHeadsUpDisplay *hud = [[FSHeadsUpDisplay alloc] initWithFrame:CGRectZero];
+    [superview addSubview:hud];
+    [hud setupConstraints];
+    return hud;
+}
 
-        [rootView addConstraint:hud.widthConstraint];
-        [rootView addConstraint:hud.heightConstraint];
-    });
-    
-    hud.messageLabel.text = [message copy];
-    hud.opaque = NO;
-    hud.superview.userInteractionEnabled = NO;
-    
-    [hud.dismissalTimer invalidate];
-    hud.dismissalTimer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:hud selector:@selector(dismissHeadsUpDisplay:) userInfo:nil repeats:NO];
-    
-    [hud setNeedsLayout];
-    [hud setNeedsDisplay];
-    
-    if ([hud isHidden] == YES) {
-        [hud showAnimated];
++ (void)setDefaultHeadsUpDisplay:(FSHeadsUpDisplay *)hud {
+    if (defaultHeadsUpDisplay) {
+        [defaultHeadsUpDisplay.dismissalTimer invalidate];
+        [defaultHeadsUpDisplay hideAnimated:NO];
+        [defaultHeadsUpDisplay removeFromSuperview];
+        defaultHeadsUpDisplay.messageLabel = nil;
+        defaultHeadsUpDisplay.titleLabel = nil;
+        defaultHeadsUpDisplay.labelsContainer = nil;
+        defaultHeadsUpDisplay = nil;
     }
+    defaultHeadsUpDisplay = hud;
 }
 
-+ (UIView *)rootView {
-    UIWindow *topWindow = [[[UIApplication sharedApplication].windows sortedArrayUsingComparator:^NSComparisonResult(UIWindow *win1, UIWindow *win2) {
-        return win1.windowLevel - win2.windowLevel;
-    }] lastObject];
-    UIView *rootView = topWindow.rootViewController.view;
-    return rootView;
++ (FSHeadsUpDisplay *)defaultHeadsUpDisplay {
+    return defaultHeadsUpDisplay;
 }
 
-- (UILabel *)constructMessageLabel {
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.font = [UIFont boldSystemFontOfSize:16.0f];
-    label.textColor = [UIColor whiteColor];
-    label.textAlignment = NSTextAlignmentCenter;
-    label.adjustsFontSizeToFitWidth = NO;
-    label.lineBreakMode = NSLineBreakByTruncatingTail;
-    
-    
-    return label;
-}
-
-- (NSArray *)prepareConstraintsForLabel:(UILabel *)label withParent:(UIView *)parent {
-    [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-    NSMutableArray *constraints = [NSMutableArray array];
-    
-    [constraints addObject:[NSLayoutConstraint constraintWithItem:label attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:parent attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
-    [constraints addObject:[NSLayoutConstraint constraintWithItem:label attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:parent attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0.0f]];
-    
-    [constraints addObject:[NSLayoutConstraint constraintWithItem:label attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:parent attribute:NSLayoutAttributeWidth multiplier:0.85f constant:0.0f]];
-    // Rely on intrinsic size for height of the UILabel
-    
-    return [NSArray arrayWithArray:constraints];
++ (void)showMessage:(NSString *)message title:(NSString *)title {
+    [defaultHeadsUpDisplay showMessage:message title:title];
 }
 
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
         self.layer.cornerRadius = 10.0f;
         self.layer.masksToBounds = YES;
-        self.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.5f];
+        self.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.75f];
         self.hidden = YES;
-
-        // TODO: Add title and activity indicator.
+        self.translatesAutoresizingMaskIntoConstraints = NO;
         
-        // The height of the view is 20px + 20px + 10px + title height + message height
-        // Title label is centered horizontally and placed 20px below the top of the superview.
-        // Message label is centered horizontally and placed 20 px below the bottom of the title label.
-        // Activity indicator is centered horizontally and placed 10 px below the bottom of the message label.
-        
+        _labelsContainer = [self constructLabelsContainer];
+        _titleLabel = [self constructTitleLabel];
         _messageLabel = [self constructMessageLabel];
-        [self addSubview:_messageLabel];
-        [self addConstraints:[self prepareConstraintsForLabel:_messageLabel withParent:self]];
+        
+        [_labelsContainer addSubview:_titleLabel];
+        [_labelsContainer addSubview:_messageLabel];
+        [self addSubview:_labelsContainer];
     }
     return self;
 }
@@ -112,30 +72,127 @@
     NSLog(@"bye bye!");
 }
 
-- (void)showAnimated {
-    self.hidden = NO;
-    self.alpha = 0.0f;
-    self.transform = CGAffineTransformMakeScale(1.3f, 1.3f);
-    [UIView animateWithDuration:0.3f animations:^{
-        self.alpha = 0.8f;
-        self.transform = CGAffineTransformIdentity;
-    } completion:^(BOOL finished) {
-        //
+- (UIView *)constructLabelsContainer {
+    UIView *container = [[UIView alloc] initWithFrame:CGRectZero];
+    container.translatesAutoresizingMaskIntoConstraints = NO;
+    return container;
+}
+
+- (UILabel *)constructTitleLabel {
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.font = [UIFont boldSystemFontOfSize:18.0f];
+    label.textColor = [UIColor whiteColor];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.adjustsFontSizeToFitWidth = NO;
+    label.lineBreakMode = NSLineBreakByTruncatingTail;
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    return label;
+}
+
+- (UILabel *)constructMessageLabel {
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.font = [UIFont boldSystemFontOfSize:14.0f];
+    label.textColor = [UIColor whiteColor];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.adjustsFontSizeToFitWidth = NO;
+    label.lineBreakMode = NSLineBreakByTruncatingTail;
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    return label;
+}
+
+- (void)showMessage:(NSString *)message title:(NSString *)title {
+    [NSThread ensureMainThread:^{
+        self.messageLabel.text = [message copy];
+        self.titleLabel.text = [title copy];
+        self.opaque = NO;
+        self.superview.userInteractionEnabled = NO;
+        
+        [self.dismissalTimer invalidate];
+        self.dismissalTimer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(dismissHeadsUpDisplay:) userInfo:nil repeats:NO];
+        
+        [self.superview bringSubviewToFront:self];
+
+        [self setNeedsUpdateConstraints];
+        [self setNeedsLayout];
+        [self setNeedsDisplay];
+        
+        if ([self isHidden] == YES) {
+            [self showAnimated:YES];
+        }
     }];
 }
 
-- (void)hideAnimated {
-    [UIView animateWithDuration:0.3f animations:^{
-        self.alpha = 0.0f;
-    } completion:^(BOOL finished) {
-        UIView *superview = [self superview];
-        superview.userInteractionEnabled = YES;
-        self.hidden = YES;
+- (void)setupConstraints {
+    float height = 150.0f;
+    NSDictionary *views = @{ @"superview": self.superview, @"self": self, @"container": _labelsContainer, @"title": _titleLabel, @"message": _messageLabel };
+    NSDictionary *metrics = @{ @"verticalSpace": @16.0, @"border": @30.0, @"height": @(height) };
+    
+    [_labelsContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[title]-[message]-|" options:NSLayoutFormatAlignAllCenterX metrics:metrics views:views]];
+    [_labelsContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-[title]-|" options:0 metrics:metrics views:views]];
+    [_labelsContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-[message]-|" options:0 metrics:metrics views:views]];
+    
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-[container]-|" options:0 metrics:metrics views:views]];
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-[container]-|" options:0 metrics:metrics views:views]];
+    
+    [self.superview addConstraint:[NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
+    [self.superview addConstraint:[NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeCenterY multiplier:1.0f constant:0.0f]];
+    [self.superview addConstraint:[NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeWidth multiplier:0.85f constant:0.0f]];
+    [self.superview addConstraint:[NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0f constant:height]];
+}
+
+- (void)updateConstraints {
+    // Add code to update constraints here.
+    [super updateConstraints];
+}
+
+- (void)showAnimated:(BOOL)animated {
+    [NSThread ensureMainThread:^{
+        if (animated) {
+            self.hidden = NO;
+            self.alpha = 0.0f;
+            self.transform = CGAffineTransformMakeScale(1.3f, 1.3f);
+            [UIView animateWithDuration:0.3f animations:^{
+                self.alpha = 0.8f;
+                self.transform = CGAffineTransformIdentity;
+            } completion:^(BOOL finished) {
+                //
+            }];
+        }
+        else {
+            self.alpha = 0.8f;
+            self.transform = CGAffineTransformIdentity;
+            self.hidden = NO;
+        }
+    }];
+}
+
+- (void)hideAnimated:(BOOL)animated {
+    [NSThread ensureMainThread:^{
+        if (self.dismissalTimer) {
+            [self.dismissalTimer invalidate];
+        }
+        
+        if (animated) {
+            [UIView animateWithDuration:0.3f animations:^{
+                self.alpha = 0.0f;
+            } completion:^(BOOL finished) {
+                UIView *superview = [self superview];
+                superview.userInteractionEnabled = YES;
+                self.hidden = YES;
+            }];
+        }
+        else {
+            UIView *superview = [self superview];
+            superview.userInteractionEnabled = YES;
+            self.hidden = YES;
+        }
     }];
 }
 
 - (void)dismissHeadsUpDisplay:(NSTimer *)timer {
-    [self hideAnimated];
+    [self hideAnimated:YES];
 }
 
 @end

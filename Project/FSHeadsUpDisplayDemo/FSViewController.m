@@ -13,6 +13,7 @@
 @property (nonatomic, strong) NSArray *messages;
 @property (nonatomic, strong) NSTimer *messageTimer;
 @property (nonatomic, assign) NSUInteger messageIndex;
+@property (nonatomic, strong) FSHeadsUpDisplay *hud;
 @end
 
 @implementation FSViewController
@@ -32,6 +33,13 @@
                       @"5", @"4", @"3", @"2", @"1",
                       @"Kaboom!"
                     ];
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.hud = [FSHeadsUpDisplay HeadsUpDisplayForView:self.view];
+    [FSHeadsUpDisplay setDefaultHeadsUpDisplay:self.hud];
 }
 
 - (void)didReceiveMemoryWarning
