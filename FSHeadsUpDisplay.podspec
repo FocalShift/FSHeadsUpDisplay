@@ -15,7 +15,11 @@ Pod::Spec.new do |s|
       presented.
                        DESC
   s.homepage         = "https://github.com/FocalShift/FSHeadsUpDisplay"
-  s.screenshots      = "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/ipad-hud-landscape.png"
+  s.screenshots      = "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/iphone-hud-landscape.png",
+                       "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/iphone-hud-portrait.png",
+                       "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/ipad-hud-landscape.png",
+                       "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/ipad-hud-portrait.png"
+
   s.license          = 'MIT'
   s.author           = { "Bennett Smith" => "bennett@focalshift.com" }
   s.source           = { :git => "https://github.com/FocalShift/FSHeadsUpDisplay.git", :tag => s.version.to_s }
