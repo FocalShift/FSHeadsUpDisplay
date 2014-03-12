@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "FSHeadsUpDisplay"
-  s.version          = "0.1.1"
+  s.version          = "0.1.2"
   s.summary          = "Presents a heads-up display on iOS."
   s.description      = <<-DESC
       Provides a simple heads-up display for iOS apps. Can be used
