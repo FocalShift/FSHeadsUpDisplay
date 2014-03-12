@@ -1,12 +1,6 @@
-#
-# Be sure to run `pod spec lint NAME.podspec' to ensure this is a
-# valid spec and remove all comments before submitting the spec.
-#
-# To learn more about the attributes see http://guides.cocoapods.org/syntax/podspec.html
-#
 Pod::Spec.new do |s|
   s.name             = "FSHeadsUpDisplay"
-  s.version          = "0.1.0"
+  s.version          = "0.1.1"
   s.summary          = "Presents a heads-up display on iOS."
   s.description      = <<-DESC
       Provides a simple heads-up display for iOS apps. Can be used
@@ -30,11 +24,11 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.source_files = 'Classes/ios/*.{h,m}'
-  s.resources = 'Assets'
+  # s.resources = 'Assets'
 
   s.ios.exclude_files = 'Classes/osx'
   s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/**/*.h'
   # s.frameworks = 'SomeFramework', 'AnotherFramework'
-  # s.dependency 'JSONKit', '~> 1.4'
+  s.dependency 'FSClassExtensions', '~> 1.6'
 end
