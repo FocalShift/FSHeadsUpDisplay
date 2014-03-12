@@ -7,18 +7,18 @@
 Pod::Spec.new do |s|
   s.name             = "FSHeadsUpDisplay"
   s.version          = "0.1.0"
-  s.summary          = "A short description of FSHeadsUpDisplay."
+  s.summary          = "Presents a heads-up display on iOS."
   s.description      = <<-DESC
-                       An optional longer description of FSHeadsUpDisplay
-
-                       * Markdown format.
-                       * Don't worry about the indent, we strip it!
+      Provides a simple heads-up display for iOS apps. Can be used
+      to display messages on either iPhone or iPad.  Display automatically
+      hides after a predetermined time if no additional messages are
+      presented.
                        DESC
-  s.homepage         = "http://EXAMPLE/NAME"
-  s.screenshots      = "www.example.com/screenshots_1", "www.example.com/screenshots_2"
+  s.homepage         = "https://github.com/FocalShift/FSHeadsUpDisplay"
+  s.screenshots      = "https://raw.github.com/FocalShift/FSHeadsUpDisplay/develop/Screenshots/ipad-hud-landscape.png"
   s.license          = 'MIT'
   s.author           = { "Bennett Smith" => "bennett@focalshift.com" }
-  s.source           = { :git => "http://EXAMPLE/NAME.git", :tag => s.version.to_s }
+  s.source           = { :git => "https://github.com/FocalShift/FSHeadsUpDisplay.git", :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/NAME'
 
   s.platform     = :ios, '7.0'

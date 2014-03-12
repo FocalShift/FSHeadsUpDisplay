@@ -10,6 +10,7 @@
 #import <FSHeadsUpDisplay/FSHeadsUpDisplay.h>
 
 @interface FSViewController ()
+@property (nonatomic, strong) NSString *title;
 @property (nonatomic, strong) NSArray *messages;
 @property (nonatomic, strong) NSTimer *messageTimer;
 @property (nonatomic, assign) NSUInteger messageIndex;
@@ -22,6 +23,9 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    
+    self.title = @"FSHeadsUpDisplay";
+    
     self.messages = @[
                       @"The Quick Brown Fox Jumped Over The Lazy Rabbit.",
                       @"Nihilne te nocturnum praesidium Palati, nihil urbis vigiliae.",
@@ -54,7 +58,7 @@
 }
 
 - (void)displayNextMessage:(NSTimer *)timer {
-    [FSHeadsUpDisplay showMessage:self.messages[self.messageIndex] title:@""];
+    [FSHeadsUpDisplay showMessage:self.messages[self.messageIndex] title:self.title];
     self.messageIndex++;
     if (self.messageIndex == self.messages.count) {
         [self.messageTimer invalidate];

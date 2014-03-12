@@ -1,7 +1,11 @@
 PODS:
+  - FSClassExtensions (1.6.0):
+    - FSClassExtensions/Shared
+  - FSClassExtensions/Shared (1.6.0)
   - FSHeadsUpDisplay (0.1.0)
 
 DEPENDENCIES:
+  - FSClassExtensions
   - FSHeadsUpDisplay (from `../FSHeadsUpDisplay.podspec`)
 
 EXTERNAL SOURCES:
@@ -9,6 +13,7 @@ EXTERNAL SOURCES:
     :path: ../FSHeadsUpDisplay.podspec
 
 SPEC CHECKSUMS:
+  FSClassExtensions: ab8f0d67f3a2d47cfcfba02b338895136f41d9c3
   FSHeadsUpDisplay: e89295ad7bc688858b54e2725547292b89a1dfde
 
-COCOAPODS: 0.28.0
+COCOAPODS: 0.29.0
