@@ -56,7 +56,7 @@ static FSHeadsUpDisplay *defaultHeadsUpDisplay = nil;
         self.backgroundColor = [UIColor colorWithWhite:0.0f alpha:0.75f];
         self.hidden = YES;
         self.translatesAutoresizingMaskIntoConstraints = NO;
-        
+        _hudDismissalTime = 5.0f;
         _labelsContainer = [self constructLabelsContainer];
         _titleLabel = [self constructTitleLabel];
         _messageLabel = [self constructMessageLabel];
@@ -69,7 +69,7 @@ static FSHeadsUpDisplay *defaultHeadsUpDisplay = nil;
 }
 
 - (void)dealloc {
-    NSLog(@"bye bye!");
+    NSLog(@"HUD dealloc called!");
 }
 
 - (UIView *)constructLabelsContainer {
@@ -110,7 +110,7 @@ static FSHeadsUpDisplay *defaultHeadsUpDisplay = nil;
         self.superview.userInteractionEnabled = NO;
         
         [self.dismissalTimer invalidate];
-        self.dismissalTimer = [NSTimer scheduledTimerWithTimeInterval:2.0f target:self selector:@selector(dismissHeadsUpDisplay:) userInfo:nil repeats:NO];
+        self.dismissalTimer = [NSTimer scheduledTimerWithTimeInterval:self.hudDismissalTime target:self selector:@selector(dismissHeadsUpDisplay:) userInfo:nil repeats:NO];
         
         [self.superview bringSubviewToFront:self];
 

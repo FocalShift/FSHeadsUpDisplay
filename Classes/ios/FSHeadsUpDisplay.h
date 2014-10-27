@@ -13,6 +13,8 @@
 + (FSHeadsUpDisplay *)defaultHeadsUpDisplay;
 + (void)showMessage:(NSString *)message title:(NSString *)title;
 
+@property (nonatomic, assign) NSTimeInterval hudDismissalTime;
+
 - (void)showMessage:(NSString *)message title:(NSString *)title;
 - (void)showAnimated:(BOOL)animated;
 - (void)hideAnimated:(BOOL)animated;
